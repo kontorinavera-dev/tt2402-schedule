@@ -1,1 +1,1627 @@
-# tt2402-schedule
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta name="theme-color" content="#e8edf5">
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+  >
+  <meta
+    name="apple-mobile-web-app-title"
+    content="ТТ-24-02"
+  >
+
+  <link rel="manifest" href="./manifest.json">
+
+  <title>ТТ-24-02 — Расписание</title>
+
+  <style>
+    :root {
+      --bg: #f3f4f7;
+      --card: #ffffff;
+      --text: #20242b;
+      --muted: #858b96;
+      --line: #eceef2;
+      --accent: #7f9fbd;
+      --accent-soft: #e8edf5;
+      --danger: #d85b5b;
+      --shadow: 0 7px 24px rgba(40, 48, 60, 0.06);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+    }
+
+    body {
+      padding-bottom: 92px;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+    }
+
+    /* ШАПКА */
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 6px 2px 18px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 31px;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+
+    .brand p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .info-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--card);
+      color: #56606c;
+      box-shadow: var(--shadow);
+      font-size: 21px;
+      flex: 0 0 auto;
+    }
+
+    /* ДАТА */
+
+    .date-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .date-title {
+      font-size: 19px;
+      font-weight: 750;
+      letter-spacing: -0.2px;
+    }
+
+    .date-subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .today-pill {
+      background: var(--accent-soft);
+      color: #58738c;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* ПЕРЕКЛЮЧАТЕЛЬ НЕДЕЛИ */
+
+    .week-switch {
+      display: flex;
+      background: #e9ebef;
+      border-radius: 15px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .week-switch button {
+      flex: 1;
+      padding: 10px 8px;
+      border-radius: 12px;
+      background: transparent;
+      color: #7d838d;
+      font-weight: 700;
+    }
+
+    .week-switch button.active {
+      background: #fff;
+      color: #333942;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* ЗАНЯТИЯ */
+
+    .lesson-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .lesson {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 15px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .lesson-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .lesson-time {
+      color: #5c7892;
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .lesson-number {
+      color: #a1a6ae;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .lesson-subject {
+      margin-top: 9px;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 780;
+    }
+
+    .lesson-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 11px;
+    }
+
+    .tag {
+      padding: 6px 9px;
+      border-radius: 9px;
+      background: #f1f3f6;
+      color: #727985;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .tag.room {
+      background: #edf2f7;
+      color: #617a90;
+    }
+
+    .lesson-teacher {
+      margin-top: 10px;
+      color: #707680;
+      font-size: 14px;
+    }
+
+    /* ПУСТОЙ ДЕНЬ */
+
+    .empty {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+
+    .empty strong {
+      display: block;
+      color: #555c66;
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .prep-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+
+    .prep-card .icon {
+      font-size: 31px;
+      margin-bottom: 10px;
+    }
+
+    /* НЕДЕЛЯ */
+
+    .week-day {
+      margin-top: 25px;
+    }
+
+    .week-day:first-child {
+      margin-top: 4px;
+    }
+
+    .week-day-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin: 0 2px 10px;
+    }
+
+    .week-day-title h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .week-day-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ДОМАШНИЕ ЗАДАНИЯ */
+
+    .homework-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .homework {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 15px;
+      box-shadow: var(--shadow);
+    }
+
+    .homework-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .homework-subject {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .homework-date {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .homework-text {
+      margin-top: 8px;
+      color: #646b75;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .homework-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .small-btn {
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: #eef1f5;
+      color: #626a75;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .small-btn.delete {
+      color: var(--danger);
+    }
+
+    .add-btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 18px;
+      background: #dfe8f1;
+      color: #58738c;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    /* О САЙТЕ */
+
+    .about-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 21px;
+      box-shadow: var(--shadow);
+      line-height: 1.55;
+      color: #686f79;
+    }
+
+    .about-card h2 {
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 21px;
+    }
+
+    .about-card p {
+      margin: 8px 0;
+    }
+
+    /* НИЖНЕЕ МЕНЮ */
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      width: min(720px, calc(100% - 20px));
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(225, 228, 233, 0.9);
+      box-shadow: 0 10px 30px rgba(30, 38, 50, 0.12);
+      border-radius: 24px;
+      padding: 7px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .nav-btn {
+      min-height: 58px;
+      background: transparent;
+      color: #8a9099;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .nav-btn .nav-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .nav-btn.active {
+      color: #506d87;
+      background: #edf2f7;
+    }
+
+    /* МОДАЛЬНОЕ ОКНО */
+
+    .modal-backdrop {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      background: rgba(20, 25, 32, 0.32);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      background: #fff;
+      border-radius: 28px 28px 0 0;
+      padding: 10px 18px 24px;
+      box-shadow: 0 -10px 35px rgba(20, 25, 32, 0.12);
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .handle {
+      width: 44px;
+      height: 5px;
+      border-radius: 99px;
+      background: #d5d8dd;
+      margin: 4px auto 17px;
+    }
+
+    .modal h2 {
+      margin: 0 0 15px;
+      font-size: 23px;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    .field label {
+      display: block;
+      margin: 0 0 7px 2px;
+      color: #6e747e;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid #e3e5e9;
+      background: #f7f8fa;
+      border-radius: 14px;
+      padding: 13px;
+      outline: none;
+      color: var(--text);
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 9px;
+      margin-top: 7px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: 800;
+    }
+
+    .cancel-btn {
+      background: #eef0f3;
+      color: #666d76;
+    }
+
+    .save-btn {
+      background: #dfe8f1;
+      color: #526f89;
+    }
+
+    @media (min-width: 700px) {
+      .app {
+        padding-top: 30px;
+      }
+
+      .brand h1 {
+        font-size: 35px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <h1>ТТ-24-02</h1>
+        <p>Расписание занятий</p>
+      </div>
+
+      <button
+        class="info-btn"
+        id="infoBtn"
+        aria-label="О сайте"
+      >
+        i
+      </button>
+    </header>
+
+    <div id="appContent"></div>
+
+  </main>
+
+  <!-- НИЖНЕЕ МЕНЮ -->
+
+  <nav class="bottom-nav">
+
+    <button
+      class="nav-btn active"
+      data-tab="today"
+    >
+      <span class="nav-icon">⌂</span>
+      <span>Сегодня</span>
+    </button>
+
+    <button
+      class="nav-btn"
+      data-tab="week"
+    >
+      <span class="nav-icon">▦</span>
+      <span>Неделя</span>
+    </button>
+
+    <button
+      class="nav-btn"
+      data-tab="homework"
+    >
+      <span class="nav-icon">✓</span>
+      <span>Д/З</span>
+    </button>
+
+    <button
+      class="nav-btn"
+      data-tab="about"
+    >
+      <span class="nav-icon">ⓘ</span>
+      <span>О сайте</span>
+    </button>
+
+  </nav>
+
+  <!-- ОКНО ДОМАШНЕГО ЗАДАНИЯ -->
+
+  <div
+    class="modal-backdrop"
+    id="modalBackdrop"
+  >
+
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+    >
+
+      <div class="handle"></div>
+
+      <h2 id="modalTitle">
+        Новое домашнее задание
+      </h2>
+
+      <div class="field">
+
+        <label for="hwSubject">
+          Предмет
+        </label>
+
+        <input
+          id="hwSubject"
+          type="text"
+          placeholder="Например: Менеджмент в туризме"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="hwDate">
+          Дата
+        </label>
+
+        <input
+          id="hwDate"
+          type="date"
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label for="hwText">
+          Задание
+        </label>
+
+        <textarea
+          id="hwText"
+          placeholder="Напиши домашнее задание..."
+        ></textarea>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          class="cancel-btn"
+          id="cancelModal"
+        >
+          Отмена
+        </button>
+
+        <button
+          class="save-btn"
+          id="saveHomework"
+        >
+          Сохранить
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+
+  <script>
+
+    /*
+    =====================================================
+    РАСПИСАНИЕ ТТ-24-02
+    =====================================================
+    */
+
+    const schedule = {
+
+      1: {
+        name: "Понедельник",
+
+        lessons: [
+
+          [
+            "09:00–10:40",
+            "Менеджмент в туризме и гостеприимстве",
+            "Лекция",
+            "Чернова Т.Н.",
+            "324",
+            "1"
+          ],
+
+          [
+            "10:50–12:30",
+            "Предпринимательская деятельность в сфере туризма и гостиничного бизнеса",
+            "Лекция",
+            "Чернова Т.Н.",
+            "324",
+            "2"
+          ],
+
+          [
+            "13:15–14:55",
+            "Физическая культура",
+            "ПЗ",
+            "Романов А.О.",
+            "207",
+            "3"
+          ],
+
+          [
+            "15:05–16:45",
+            "Иностранный язык в профессиональной деятельности",
+            "ПЗ",
+            "Чернова Т.Н.",
+            "324",
+            "4"
+          ]
+
+        ]
+      },
+
+      2: {
+        name: "Вторник",
+
+        lessons: [
+
+          [
+            "09:00–10:40",
+            "Автоматизация системы управления предприятий туризма и гостеприимства",
+            "Лекция",
+            "Саморуков А.С.",
+            "216",
+            "1"
+          ],
+
+          [
+            "10:50–12:30",
+            "Иностранный язык (второй)",
+            "ПЗ",
+            "Осипов И.В.",
+            "323",
+            "2"
+          ],
+
+          [
+            "13:15–14:00",
+            "Физическая культура",
+            "ПЗ",
+            "Романов А.О.",
+            "207",
+            "3"
+          ],
+
+          [
+            "14:10–14:55",
+            "Автоматизация системы управления предприятий туризма и гостеприимства",
+            "ПЗ",
+            "Саморуков А.С.",
+            "214",
+            "3"
+          ],
+
+          [
+            "15:05–16:45",
+            "Автоматизация системы управления предприятий туризма и гостеприимства",
+            "ПЗ",
+            "Саморуков А.С.",
+            "214",
+            "4"
+          ]
+
+        ]
+      },
+
+      3: {
+        name: "Среда",
+
+        lessons: [
+
+          [
+            "09:00–10:40",
+            "Предоставление туристических услуг",
+            "Лекция",
+            "Санчи М.А.",
+            "216",
+            "1"
+          ],
+
+          [
+            "10:50–12:30",
+            "Предоставление туристических услуг",
+            "Лекция",
+            "Санчи М.А.",
+            "216",
+            "2"
+          ],
+
+          [
+            "13:15–14:55",
+            "Иностранный язык (второй)",
+            "ПЗ",
+            "Осипов И.В.",
+            "323",
+            "3"
+          ]
+
+        ]
+      },
+
+      4: {
+        name: "Четверг",
+
+        lessons: [
+
+          [
+            "09:00–10:40",
+            "Контроль качества обслуживания туристов",
+            "Лекция",
+            "Бух М.С.",
+            "205",
+            "1"
+          ],
+
+          [
+            "10:50–12:30",
+            "Контроль качества обслуживания туристов",
+            "Лекция",
+            "Бух М.С.",
+            "205",
+            "2"
+          ],
+
+          [
+            "13:15–14:55",
+            "Предоставление туроператорских услуг",
+            "ПЗ",
+            "Санчи М.А.",
+            "216",
+            "3"
+          ],
+
+          [
+            "15:05–16:45",
+            "Предоставление туроператорских услуг",
+            "ПЗ",
+            "Санчи М.А.",
+            "216",
+            "4"
+          ]
+
+        ]
+      },
+
+      5: {
+        name: "Пятница",
+
+        lessons: [
+
+          [
+            "09:00–10:40",
+            "Менеджмент в туризме и гостеприимстве",
+            "ПЗ",
+            "Чернова Т.Н.",
+            "324",
+            "1"
+          ],
+
+          [
+            "10:50–12:30",
+            "Предпринимательская деятельность в сфере туризма и гостиничного бизнеса",
+            "ПЗ",
+            "Чернова Т.Н.",
+            "324",
+            "2"
+          ],
+
+          [
+            "13:15–14:55",
+            "Контроль качества обслуживания туристов",
+            "ПЗ",
+            "Бух М.С.",
+            "205",
+            "3"
+          ]
+
+        ]
+      },
+
+      6: {
+        name: "Суббота",
+        lessons: [],
+        preparation: true
+      }
+
+    };
+
+
+    /*
+    =====================================================
+    СОСТОЯНИЕ ПРИЛОЖЕНИЯ
+    =====================================================
+    */
+
+    const state = {
+      tab: "today",
+      editingHomeworkId: null
+    };
+
+
+    const content =
+      document.getElementById("appContent");
+
+    const modalBackdrop =
+      document.getElementById("modalBackdrop");
+
+
+    /*
+    =====================================================
+    ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    =====================================================
+    */
+
+    function pad(number) {
+      return String(number).padStart(2, "0");
+    }
+
+
+    function formatDate(date) {
+
+      return (
+        pad(date.getDate()) +
+        "." +
+        pad(date.getMonth() + 1) +
+        "." +
+        date.getFullYear()
+      );
+
+    }
+
+
+    function formatDateInput(date) {
+
+      return (
+        date.getFullYear() +
+        "-" +
+        pad(date.getMonth() + 1) +
+        "-" +
+        pad(date.getDate())
+      );
+
+    }
+
+
+    function getTodayDay() {
+
+      const day = new Date().getDay();
+
+      return day === 0 ? 7 : day;
+
+    }
+
+
+    function getWeekDates() {
+
+      const today = new Date();
+
+      today.setHours(12, 0, 0, 0);
+
+      const day =
+        today.getDay() || 7;
+
+      const monday =
+        new Date(today);
+
+      monday.setDate(
+        today.getDate() - day + 1
+      );
+
+      return [1, 2, 3, 4, 5, 6].map(
+        offset => {
+
+          const date =
+            new Date(monday);
+
+          date.setDate(
+            monday.getDate() + offset - 1
+          );
+
+          return date;
+
+        }
+      );
+
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    /*
+    =====================================================
+    КАРТОЧКА ЗАНЯТИЯ
+    =====================================================
+    */
+
+    function lessonHtml(lesson) {
+
+      const [
+        time,
+        subject,
+        type,
+        teacher,
+        room,
+        number
+      ] = lesson;
+
+      return `
+
+        <article class="lesson">
+
+          <div class="lesson-top">
+
+            <div class="lesson-time">
+              ${escapeHtml(time)}
+            </div>
+
+            <div class="lesson-number">
+              № ${escapeHtml(number)}
+            </div>
+
+          </div>
+
+          <div class="lesson-subject">
+            ${escapeHtml(subject)}
+          </div>
+
+          <div class="lesson-meta">
+
+            <span class="tag">
+              ${escapeHtml(type)}
+            </span>
+
+            <span class="tag room">
+              Каб. ${escapeHtml(room)}
+            </span>
+
+          </div>
+
+          <div class="lesson-teacher">
+            ${escapeHtml(teacher)}
+          </div>
+
+        </article>
+
+      `;
+
+    }
+
+
+    function emptyHtml(
+      text = "Занятий нет"
+    ) {
+
+      return `
+
+        <div class="empty">
+
+          <strong>
+            Свободный день
+          </strong>
+
+          <span>
+            ${escapeHtml(text)}
+          </span>
+
+        </div>
+
+      `;
+
+    }
+
+
+    function preparationHtml() {
+
+      return `
+
+        <div class="empty prep-card">
+
+          <div class="icon">
+            📚
+          </div>
+
+          <strong>
+            День самостоятельной подготовки
+          </strong>
+
+          <span>
+            Занятий по расписанию нет.
+          </span>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /*
+    =====================================================
+    ВКЛАДКА "СЕГОДНЯ"
+    =====================================================
+    */
+
+    function renderToday() {
+
+      const today =
+        new Date();
+
+      const day =
+        getTodayDay();
+
+      const data =
+        schedule[day];
+
+      let html = `
+
+        <div class="date-strip">
+
+          <div>
+
+            <div class="date-title">
+              ${
+                data
+                  ? data.name
+                  : "Воскресенье"
+              }
+            </div>
+
+            <div class="date-subtitle">
+              ${formatDate(today)}
+            </div>
+
+          </div>
+
+          <div class="today-pill">
+            Сегодня
+          </div>
+
+        </div>
+
+      `;
+
+
+      if (day === 7) {
+
+        html +=
+          emptyHtml("Сегодня воскресенье.");
+
+      }
+
+      else if (data?.preparation) {
+
+        html +=
+          preparationHtml();
+
+      }
+
+      else if (
+        !data ||
+        data.lessons.length === 0
+      ) {
+
+        html +=
+          emptyHtml();
+
+      }
+
+      else {
+
+        html += `
+
+          <div class="lesson-list">
+
+            ${data.lessons
+              .map(lessonHtml)
+              .join("")}
+
+          </div>
+
+        `;
+
+      }
+
+
+      content.innerHTML = html;
+
+    }
+
+
+    /*
+    =====================================================
+    ВКЛАДКА "НЕДЕЛЯ"
+    =====================================================
+    */
+
+    function renderWeek() {
+
+      const dates =
+        getWeekDates();
+
+      content.innerHTML = `
+
+        <div class="date-strip">
+
+          <div>
+
+            <div class="date-title">
+              Эта неделя
+            </div>
+
+            <div class="date-subtitle">
+              ${formatDate(dates[0])}
+              —
+              ${formatDate(dates[5])}
+            </div>
+
+          </div>
+
+        </div>
+
+        ${dates.map(
+          (date, index) => {
+
+            const day =
+              index + 1;
+
+            const data =
+              schedule[day];
+
+            const isToday =
+              date.toDateString() ===
+              new Date().toDateString();
+
+            let body = "";
+
+
+            if (data?.preparation) {
+
+              body =
+                preparationHtml();
+
+            }
+
+            else if (
+              data?.lessons?.length
+            ) {
+
+              body = `
+
+                <div class="lesson-list">
+
+                  ${data.lessons
+                    .map(lessonHtml)
+                    .join("")}
+
+                </div>
+
+              `;
+
+            }
+
+            else {
+
+              body =
+                emptyHtml();
+
+            }
+
+
+            return `
+
+              <section class="week-day">
+
+                <div class="week-day-title">
+
+                  <h3>
+                    ${data.name}
+                    ${
+                      isToday
+                        ? " · сегодня"
+                        : ""
+                    }
+                  </h3>
+
+                  <span>
+                    ${formatDate(date)}
+                  </span>
+
+                </div>
+
+                ${body}
+
+              </section>
+
+            `;
+
+          }
+        ).join("")}
+
+      `;
+
+    }
+
+
+    /*
+    =====================================================
+    ДОМАШНИЕ ЗАДАНИЯ
+    =====================================================
+    */
+
+    function getHomework() {
+
+      try {
+
+        const data =
+          JSON.parse(
+            localStorage.getItem(
+              "tt2402-homework"
+            ) || "[]"
+          );
+
+        return Array.isArray(data)
+          ? data
+          : [];
+
+      }
+
+      catch {
+
+        return [];
+
+      }
+
+    }
+
+
+    function saveHomeworkList(list) {
+
+      localStorage.setItem(
+        "tt2402-homework",
+        JSON.stringify(list)
+      );
+
+    }
+
+
+    function renderHomework() {
+
+      const list =
+        getHomework().sort(
+          (a, b) =>
+            String(a.date)
+              .localeCompare(
+                String(b.date)
+              )
+        );
+
+
+      content.innerHTML = `
+
+        <button
+          class="add-btn"
+          id="addHomework"
+        >
+          ＋ Добавить домашнее задание
+        </button>
+
+        ${
+          list.length
+
+          ?
+
+          `
+
+            <div class="homework-list">
+
+              ${list.map(item => `
+
+                <article class="homework">
+
+                  <div class="homework-head">
+
+                    <div class="homework-subject">
+                      ${escapeHtml(item.subject)}
+                    </div>
+
+                    <div class="homework-date">
+                      ${escapeHtml(item.date)}
+                    </div>
+
+                  </div>
+
+                  <div class="homework-text">
+                    ${escapeHtml(item.text)}
+                  </div>
+
+                  <div class="homework-actions">
+
+                    <button
+                      class="small-btn"
+                      data-edit="${item.id}"
+                    >
+                      Изменить
+                    </button>
+
+                    <button
+                      class="small-btn delete"
+                      data-delete="${item.id}"
+                    >
+                      Удалить
+                    </button>
+
+                  </div>
+
+                </article>
+
+              `).join("")}
+
+            </div>
+
+          `
+
+          :
+
+          emptyHtml(
+            "Здесь будут сохранённые домашние задания."
+          )
+        }
+
+      `;
+
+
+      document
+        .getElementById("addHomework")
+        .addEventListener(
+          "click",
+          () => openHomeworkModal()
+        );
+
+
+      content
+        .querySelectorAll("[data-edit]")
+        .forEach(button => {
+
+          button.addEventListener(
+            "click",
+            () =>
+              openHomeworkModal(
+                button.dataset.edit
+              )
+          );
+
+        });
+
+
+      content
+        .querySelectorAll("[data-delete]")
+        .forEach(button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const id =
+                button.dataset.delete;
+
+              const list =
+                getHomework().filter(
+                  item =>
+                    String(item.id) !==
+                    String(id)
+                );
+
+              saveHomeworkList(list);
+
+              renderHomework();
+
+            }
+          );
+
+        });
+
+    }
+
+
+    /*
+    =====================================================
+    "О САЙТЕ"
+    =====================================================
+    */
+
+    function renderAbout() {
+
+      content.innerHTML = `
+
+        <div class="about-card">
+
+          <h2>
+            ТТ-24-02
+          </h2>
+
+          <p>
+            Это отдельный сайт с расписанием
+            учебных занятий группы.
+          </p>
+
+          <p>
+            Расписание хранится непосредственно
+            в этом приложении.
+          </p>
+
+          <p>
+            Домашние задания сохраняются
+            локально на устройстве.
+          </p>
+
+          <p>
+            Сайт можно установить на телефон
+            как приложение.
+          </p>
+
+        </div>
+
+      `;
+
+    }
+
+
+    /*
+    =====================================================
+    ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+    =====================================================
+    */
+
+    function render() {
+
+      document
+        .querySelectorAll(".nav-btn")
+        .forEach(button => {
+
+          button.classList.toggle(
+            "active",
+            button.dataset.tab === state.tab
+          );
+
+        });
+
+
+      if (state.tab === "today") {
+        renderToday();
+      }
+
+      if (state.tab === "week") {
+        renderWeek();
+      }
+
+      if (state.tab === "homework") {
+        renderHomework();
+      }
+
+      if (state.tab === "about") {
+        renderAbout();
+      }
+
+    }
+
+
+    /*
+    =====================================================
+    ДОМАШНЕЕ ЗАДАНИЕ — ОТКРЫТИЕ
+    =====================================================
+    */
+
+    function openHomeworkModal(id = null) {
+
+      state.editingHomeworkId = id;
+
+      const list =
+        getHomework();
+
+      const item =
+        id
+          ? list.find(
+              x =>
+                String(x.id) ===
+                String(id)
+            )
+          : null;
+
+
+      document
+        .getElementById("modalTitle")
+        .textContent =
+          item
+            ? "Изменить домашнее задание"
